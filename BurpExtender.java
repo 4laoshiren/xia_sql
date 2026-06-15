@@ -483,18 +483,19 @@ public class BurpExtender extends AbstractTableModel implements IBurpExtender, I
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if(switchs == 1) {
-                        //不应在Swing事件调度线程中发出HTTP请求，所以需要创建一个Runnable并在 run() 方法中完成工作，后调用 new Thread(runnable).start() 来启动线程
-                        Thread thread = new Thread(new Runnable() {
-                            public void run() {
-                                try {
-                                    BurpExtender.this.checkVul(responses[0], 1024);
-                                } catch (Exception ex) {
-                                    ex.printStackTrace();
-                                    BurpExtender.this.stdout.println(ex);
+                        for (final IHttpRequestResponse response : responses) {
+                            Thread thread = new Thread(new Runnable() {
+                                public void run() {
+                                    try {
+                                        BurpExtender.this.checkVul(response, 1024);
+                                    } catch (Exception ex) {
+                                        ex.printStackTrace();
+                                        BurpExtender.this.stdout.println(ex);
+                                    }
                                 }
-                            }
-                        });
-                        thread.start();
+                            });
+                            thread.start();
+                        }
                     }else {
                         BurpExtender.this.stdout.println("插件xia SQL关闭状态！");
                     }
